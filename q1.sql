@@ -18,7 +18,6 @@ order by country desc, customername asc;
 select ordernumber,sum(quantityOrdered*priceEach) as total_amount
 from orderdetails
 group by ordernumber;
-
 -- 64130500053
 -- 64130500053
 -- 2.4 List the order number and the total amount of sales of all orders that their total amount of sales is more than 55000. Name the total amount of sales column to “total_amount”.
@@ -59,12 +58,14 @@ from products
 group by productName 
 having buyPrice >= 50 and buyPrice <=60;
 
+
 -- 64130500053
 -- list customerName และ  creditLimit โดย creditLimit ต้องมีค่ามากกว่า 30000 และเรียงจากน้อยไปมาก
 select customerName,creditLimit
 from customers
 where creditLimit > 30000
 order by creditLimit asc;
+
 
 -- 64130500053
 -- list ชื่อสินค้า และ ราคาสินค้า ทั้งหมด ที่มีราคามากกว่า 60 เรียงจากมากไปน้อย
@@ -244,36 +245,23 @@ insert into usa_office_view (officeCode,city,state) value('4', 'thai', 'TH');
 
 -- 64130500053
 -- 9
+create or replace view usa_office_view as select officecode,city,phone,state,addressLine1,country,postalCode,territory
+from offices_copy 
+where country like 'USA%';
+select*from usa_office_view;
+insert into usa_office_view
+value('4','boston','+663332235','MA','123','USA','12345','MA');
 
-ALTER TABLE offices_copy
-DROP primary key (officeCode);
-
-
-SET SESSION SQL_SAFE_UPDATES = 0;
-SET FOREIGN_KEY_CHECKS = 0;
-ALTER TABLE offices_copy
-  DROP FOREIGN KEY officeCode;
-
-ALTER TABLE offices_copy
-DROP PRIMARY KEY,
-DROP FOREIGN KEY fk_1,
-DROP COLUMN Format;
-
-ALTER TABLE offices_copy
-DROP PRIMARY KEY;
-
-ALTER TABLE offices_copy
-ADD PRIMARY KEY (officeCode);
-
-SHOW CREATE TABLE offices_copy;
-ALTER TABLE offices_copy MODIFY officeCode INTEGER NOT NULL AUTO_INCREMENT;
+ALTER TABLE usa_office_view
+DROP COLUMN ;
 
 -- 64130500053
 -- 10
 DROP TABLE offices_copy;
-SELECT * FROM classicmodels.usa_office_view;
+SELECT * FROM usa_office_view;
 
-ALTER TABLE offices_copy AUTO_INCREMENT = 1
+
+
 
 
 
@@ -285,3 +273,114 @@ SET GLOBAL sql_mode='';
 insert into usa_office_view (officeCode,city,state) value("4","sss","THAI");
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 64130500053
+-- 1 
+create table usa_customers
+as select customernumber , customername , city , country
+from customers
+where 1 = 2 ;
+select * from usa_customers ;
+
+-- 64130500053
+-- 2
+insert into usa_customers select customernumber,customername,city,country
+from customers
+where country = 'USA' ;
+select count(*) from usa_customers ;
+commit ;
+
+
+-- 64130500053
+-- 3
+SET SQL_SAFE_UPDATES = 0;
+update usa_customers u
+set u.city = (select c.city from customers c
+where c.customernumber = 344)
+where u.customername = 'Mini Wheels Co.' ;
+
+
+-- 64130500053
+-- 4
+update usa_customers u
+set u.city = 'Bangmod'
+where u.customernumber in (select customernumber from customers c join employees e
+on c.salesRepEmployeeNumber = e.employeeNumber where e.lastName="Patterson");
+
+
+insert into mini_customer_view(cno, cname,city,country)
+select customernumber,customername,city,country
+from usa_customers
+where customername like 'Mini%';
+
+-- 64130500053
+-- 5
+create or replace view mini_customer_view(cno,cname,city,country)
+as select customernumber,customername,city,country
+from usa_customers
+where customername like 'Mini%' ;
+select*from mini_customer_view ;
+
+
+-- 64130500053
+-- 6
+create or replace view mini_ltd_customer_view (custno ,custname ,custcity , custcountry )
+as select cno , cname , city , country
+from mini_customer_view
+where cname like '%Ltd.'
+with local check option ;
+select*from mini_ltd_customer_view;
+                      
+                      
+				
+-- 64130500053
+-- 7
+
+insert into mini_ltd_customer_view  
+values ( '9000' , 'SUNISA Ltd.' , 'Texas' , 'USA' ) ;
+select*from mini_ltd_customer_view ;
+select*from usa_customers ;
+
+
+-- 64130500053
+-- 8
+
+insert into mini_ltd_customer_view
+values ('9001' , 'Mini SUNISA' , 'Texas' , ' USA');
+
+
+
+
+-- 64130500053
+-- 9
+
+create or replace view mini_ltd_customer_view ( custno , custname , custcity , custcountry )
+as select cno , cname , city , country
+from mini_customer_view
+where cname like '%Ltd.'
+with cascaded check option ;
+
+
+-- 64130500053
+-- 11
+
+insert into mini_ltd_customer_view
+values ('9002' , 'Mini PONGPAIROCH Ltd.' , 'Bangkok' , 'THAILAND') ;
+select*from mini_ltd_customer_view ;
+
+
+-- 64130500053
+-- 12 
+drop view customer_samecity_view ;
